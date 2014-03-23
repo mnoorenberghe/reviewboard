@@ -4,6 +4,7 @@ from django.utils.html import escape
 from djblets.util.templatetags.djblets_images import crop_image
 
 from reviewboard.reviews.ui.base import FileAttachmentReviewUI
+from reviewboard.site.urlresolvers import local_site_reverse
 
 
 class ImageReviewUI(FileAttachmentReviewUI):
@@ -24,6 +25,50 @@ class ImageReviewUI(FileAttachmentReviewUI):
             data['diffAgainstImageURL'] = self.diff_against_obj.file.url
 
         return data
+
+    def get_js_view_data(self):
+        data = super(ImageReviewUI, self).get_js_view_data()
+        self._append_view_navigation_data(data)
+        return data
+
+    def _append_view_navigation_data(self, data):
+        """ Append information about previous and next image attachments on the
+        review request.
+        """
+        found_current_attachment = False
+        for attachment in self.review_request.get_file_attachments():
+            if attachment.is_from_diff:
+                continue
+
+            # Only include other attachments that would have been viewed with this Review UI.
+            if type(self) != type(FileAttachmentReviewUI.for_type(attachment)):
+                continue
+
+            # This is a valid attachment after we found the attachment being
+            # reviewed therefore this is the "next" attachment and we break.
+            if found_current_attachment:
+                data['nextImageAttachment'] = {
+                    'caption': attachment.caption,
+                    'reviewURL': local_site_reverse('file-attachment',
+                                                    args=[self.review_request.display_id,
+                                                          attachment.pk]),
+                }
+                break
+
+            # This is the attachment being reviewed so make note of this so we
+            # can output the previous and next.
+            if attachment == self.obj:
+                found_current_attachment = True
+
+            # We haven't found the attachment being reviewed so make note of
+            # this one in case it's the one just before the one being reviewed.
+            if not found_current_attachment:
+                data['previousImageAttachment'] = {
+                    'caption': attachment.caption,
+                    'reviewURL': local_site_reverse('file-attachment',
+                                                    args=[self.review_request.display_id,
+                                                          attachment.pk]),
+                }
 
     def serialize_comments(self, comments):
         result = {}

@@ -40,6 +40,23 @@
     text-align: center;
   }
 
+  a[rel="prev"] {
+    float: left;
+  }
+
+  a[rel="prev"]::before {
+    content: "«";
+  }
+
+  a[rel="next"] {
+    float: right;
+  }
+
+  a[rel="next"]::after {
+    content: "»";
+  }
+
+
   .image-diffs {
     padding: 2em;
     text-align: center;

@@ -555,6 +555,8 @@ RB.ImageReviewableView = RB.FileAttachmentReviewableView.extend({
         this._activeSelection = {};
         this._diffModeSelectors = {};
         this._diffModeViews = {};
+        this._nextImageAttachment = options.nextImageAttachment;
+        this._previousImageAttachment = options.previousImageAttachment;
 
         /*
          * Add any CommentBlockViews to the selection area when they're
@@ -633,6 +635,15 @@ RB.ImageReviewableView = RB.FileAttachmentReviewableView.extend({
             this._imageView.render();
         }
 
+        if (this._previousImageAttachment) {
+            this._addNavigationLink(this._previousImageAttachment, "prev");
+        }
+
+        if (this._nextImageAttachment) {
+            this._addNavigationLink(this._nextImageAttachment, "next");
+        }
+
+
         /*
          * Reposition the selection area on page resize or loaded, so that
          * comments are in the right locations.
@@ -642,6 +653,18 @@ RB.ImageReviewableView = RB.FileAttachmentReviewableView.extend({
             .load(this._adjustPos);
 
         return this;
+    },
+
+    /*
+     * Adds a navigation link to go to the previous or next reviewable image.
+     *
+     * The direction should be either "prev" or "next".
+     */
+    _addNavigationLink: function(attachment, direction) {
+        this.$el.append(
+            $('<a rel="' + direction + '"/>').text(attachment.caption)
+                                             .attr("href", attachment.reviewURL)
+        );
     },
 
     /*
